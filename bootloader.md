@@ -146,7 +146,7 @@ And run the file using qemu:
 	
 You should see something like
 
-![]()
+![](images/boot1.png)
 
 ## Printing the name of our OS
 Since we have a primitive working `boot.asm` let's modify it to print a welcome message. Here is the code.
@@ -177,10 +177,14 @@ As you may know the `int` in
 	
 does not stand for integer but rather interrupt. Interrupt `0x10` writes the character in register `al` to the video display.
 
+When we compile it and run it in qemu we get:
+
+![](images/boot2.png)
+
 ## You try
 Can you modify the program so that it prints two lines? For example,
 
-![]()
+![](images/boot3.png)
 
 hint 1. To get the cursor to another line you should print carriage return followed by a line feed.
 
