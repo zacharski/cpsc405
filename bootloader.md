@@ -191,4 +191,264 @@ hint 1. To get the cursor to another line you should print carriage return follo
 hint 2.  The code `msg:	db "Wecome to zOS!",0x09, 0x09, 0 ` would end our message with two tabs (`0x09` represents a tab in ASCII).
 
 
-ß
+# The Grand Unified Bootloader
+We've created a primitive bootloader from scratch. Well ... it is not exactly a bootloader. A bootloader commonly loads the operating system. It sets up an environment (I am sort of vague here), it loads the Operating System kernel executable from disk to memory, and starts execution of the OS.  For Unix distributions, a common bootloader is called GRUB, short for **GR**and **U**nified **B**ootloader. In this exercise we are going to create a trivial OS kernel, and have GRUB boot that kernel. Pretty exciting. So, let's get started.
+
+Recall that the BIOS looks for a disk where the first 512 byte sector is a boot sector (identified by the magic numbers). When it finds a boot sector it loads it into memory and executes it. So the program it executes is limited to 512 bytes. This was not a problem for our simple boot examples above, but the GRUB executable is larger than that. So the boot sector [boot.img](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/boot.S;hb=HEAD) loads an initial executable of the core image [diskboot.img](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/diskboot.S;hb=HEAD) which then loads the rest of the core image, which contains GRUB's kernel and file system drivers  into memory. After loading the rest of the core image, it executes the [grub_main](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/kern/main.c )function.
+
+So here is a question about writing an operating system. Which language would you prefer to write an OS?
+
+	Assembly
+	
+	C
+	
+	Javascript
+	
+Personally, I would prefer Javascript, but, sadly, that is not a viable option. My last choice would be assembly.  Assembly wouldn't be too bad if all we were doing was writing 'Hello World' to the screen, but writing a complete OS would be ~~painful~~  challenging. Unfortunately, C needs a stack among other things, so we will set those up in assembly before switching to C.  (FUN FACT: Beethoven wrote his first symphony in C) Let's get started.
+
+**How do you think GRUB knows that the sector that contains our initial OS code contains real OS kernel code?**
+
+If you think 'magic numbers' you would be correct. Specifically, BIOS looks for a multiboot header. If it finds a multiboot header the BIOS first switched to [protected mode](https://en.wikipedia.org/wiki/Protected_mode), loads the OS kernel and starts execution.  
+
+## The multiboot header
+
+The multiboot header contains the following
+
+* a magic number
+* an identifier for the architecture
+* the length of the header
+* a [checksum](https://en.wikipedia.org/wiki/Checksum)
+* a sequence of tags (for this example, we don't have any)
+
+> The following code is based on a tutorial by Johan Montelius  
+
+Here is the assembly for the multiboot header:
+
+	section .multiboot_header
+	magic equ 0xe85250d6 ; multiboot 2
+	arch equ 0 ; protected mode i386
+	header_start:
+		dd magic ; magic number
+		dd arch ; architecture
+		dd header_end - header_start ; header length
+		dd 0x100000000 - (magic + arch + (header_end - header_start))
+		dw 0 ; type
+		dw 0 ; flags
+		dd 8 ; size
+	header_end:
+	
+If this assembly code is in a file named `multiboot_header.c` we can compile it with
+
+     nasm -f elf32 multiboot_header.asm
+
+The *elf* in *elf32* stands for "executable and linkage format".
+
+## The kernel
+In order to run compiled C code we need a stack and we need to set that up using Assembly:
+
+	bits 32
+	global start
+	extern kmain
+
+	section .text
+	start:
+		cli
+		mov esp, stack_space
+		call kmain
+		hlt
+
+
+	section .bss
+	resb 8192		;8KB for stack
+	stack_space:
+	
+Here is a short breakdown of what the code does.
+
+
+* `bits 32`. This is not an instruction but rather a directive that instructs the Assembler to assemble for 32 bit architecture
+* `global start`  another directive that instructs the assembler to make the symbol `start` visible to the linker
+* `extern kmain` declares that the function is defined elsewhere (in our case, in our C code)
+* `section .text` defines the start of the code section 
+* `start:` is just a label
+* `cli` disable the interrupts (`cli` is short for clear interrupts)
+*	`mov esp, stack_space` move the address of the stack_space to the stack pointer `esp`
+*	`call kmain` we call the `kmain` procedure we define in our C code
+*	`hlt`. halt the CPU
+* `section .bss`. this stands for **Block Started by Symbol** This section contains statically allocated variables not explicitly initiated to any value.
+* `resb 8192`		set aside 8K of space for the stack.
+* `stack_space: `  the `stack_space` label
+
+If the above code is in a file called `kernel_a.asm` we can assemble it with
+
+    nasm -f elf32 kernel_a.asm
+
+
+### The C code
+Now it is time to write C code and we know we want a function called `kmain`
+
+	void kmain(){
+	    // TODO
+	}
+	
+that will print a message on display. 
+
+Here is something that is a bit sad. ... You probably know that part of an operating system is a set of drivers for all sorts of things including ... video drivers. And writing a video driver just to print 'Hello World' seems like no fun.
+
+Fortunately, because of the bizarre world of backward compatibility in computer systems, the BIOS automatically puts all graphics cards (regardless of how super-expensive they are) into VGA text mode at boot up. That means your fancy video card and 4k display can display an 80x24 terminal in a whooping 16 different colors.Here are those colors:
+
+ 
+	#include <stdbool.h>
+	#include <stddef.h>
+	#include <stdint.h>
+
+	static const uint8_t COLOR_BLACK = 0;
+	static const uint8_t COLOR_BLUE = 1;
+	static const uint8_t COLOR_GREEN = 2;
+	static const uint8_t COLOR_CYAN = 3;
+	static const uint8_t COLOR_RED = 4;
+	static const uint8_t COLOR_MAGENTA = 5;
+	static const uint8_t COLOR_BROWN = 6;
+	static const uint8_t COLOR_LIGHT_GREY = 7;
+	static const uint8_t COLOR_DARK_GREY = 8;
+	static const uint8_t COLOR_LIGHT_BLUE = 9;
+	static const uint8_t COLOR_LIGHT_GREEN = 10;
+	static const uint8_t COLOR_LIGHT_CYAN = 11;
+	static const uint8_t COLOR_LIGHT_RED = 12;
+	static const uint8_t COLOR_LIGHT_MAGENTA = 13;
+	static const uint8_t COLOR_LIGHT_BROWN = 14;
+	static const uint8_t COLOR_WHITE = 15;
+
+**Note: I do not use the above codeblock in my example kernel.**
+  
+ Sweet. But wait, it is even cooler. Each of the 80x24 little virtual boxes has a foreground color (the color of the character) and a background color (the color of the little box).  	
+
+Now you might think that the `kmain` function:
+
+
+	void kmain(){
+	    // TODO
+	}
+	
+that prints a message to the screen is easy because we can just have
+
+
+	void kmain(){
+	    printf("Hello, kernel World!\n")
+	}
+	
+There are two standards for C implementations. The **freestanding** implementation only provides the macros and types declared in the standard headers \<float.h\>, \<iso646.h\>, \<limits.h\>, \<stdarg.h\>, \<stdbool.h\>, \<stddef.h\>, and \<stdint.h\>. The **hosted** implementation provides access to all of the C Standard Library. We are using the freestanding version.  So that means `printf` is unavailable to us. Our code above uses \<stdbool.h\> to get the `bool` datatype, \<stddef.h\> to get `size_t ` and `NULL`, and \<stdint.h\> to get the `intx_t` and `uintx_t` datatypes which are invaluable for operating systems development, where you need to make sure that the variable is of an exact size (if we used a short instead of `uint16_t` and the size of short changed, our VGA driver here would break!). 
+
+Here is the C code for our kernel.
+
+	/*
+	*  kernel.c
+	*/
+	void kmain(void)
+	{
+		const char *str = "my first kernel";
+		char *vidptr = (char*)0xb8000; 	//video mem begins here.
+		unsigned int i = 0;
+		unsigned int j = 0;
+
+		/* this loops clears the screen
+		* there are 25 lines each of 80 columns; each element takes 2 bytes */
+		while(j < 80 * 25 * 2) {
+			/* blank character */
+			vidptr[j] = ' ';
+			/* attribute-byte - light grey on black screen */
+			vidptr[j+1] = 0x07; 		
+			j = j + 2;
+		}
+
+		j = 0;
+
+		/* this loop writes the string to video memory */
+		while(str[j] != '\0') {
+			/* the character's ascii */
+			vidptr[i] = str[j];
+			/* attribute-byte: give character black bg and light grey fg */
+			vidptr[i+1] = 0x07;
+			++j;
+			i = i + 2;
+		}
+		return;
+	}
+
+If we name this file kernel_c.c we can compile it with
+
+
+	gcc -m32 -c kernel_c.c -ffreestanding 
+	
+Now we have assembled code for our two assembly files and compiled code for  `kernel_c.c` Now we need to link the object files together. We will use the linker script:
+
+  	/*
+	*  link.ld
+	*/
+	OUTPUT_FORMAT(elf32-i386)
+
+	 ENTRY(start)
+	SECTIONS {
+	. = 1M;
+	.boot :
+	{
+	*(.multiboot_header)
+	}
+	.text :
+	{
+	*(.text)
+	}
+	.data : { *(.data) }
+	.bss  : { *(.bss)  }
+
+	}
+	
+And link the object files:
+
+	ld -m elf_i386 -o kernel.bin -T link.ld multiboot_header.o kernel_a.o kernel_c.o
+
+The result is still in elf format which we can inspect with:
+
+	readelf -a kernel.bin
+	
+
+### creating an ISO image
+
+Before we can boot our machine there is one last step. We need to create an
+ISO image. If you ever installed some version of Linux you probably are already familiar with ISO images. They are a standard for CD-ROM discs and even though CD-ROMs have disappeared, the ISO format is still used today. To create a bootable ISO image,  we
+need to set up a directory structure to use `grub-mkrescue`.
+Create the following directory structure and copy kernel.bin to its place.
+
+    cdrom/
+        boot/
+           grub/
+              grub.cfg
+           kernel.bin
+           
+The file grub.cfg is a file that GRUB will read during boot time to locate
+our kernel. This file holds information about which kernels are available
+(hence the name multiboot) and where they are found. We only have one
+kernel to choose from but we could have more than one version. We set a
+delay of 10 seconds before GRUB loads the default kernel
+
+	set timeout=10
+	set default=0
+	menuentry "my os" {
+	multiboot2 /boot/kernel
+	boot
+	}
+	
+
+We now use grub-mkrescue to create a ISO image that is bootable and
+contains both GRUB and our kernel.
+
+ 	 grub-mkrescue -o cdrom.iso cdrom
+ 	 
+### booting our OS
+Finally we can boot our operating system
+
+	qemu-system-x86_64 -cdrom cdrom.iso
+	
+Hopefully, we should see our hello world message.
+
+
+
