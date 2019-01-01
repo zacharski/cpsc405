@@ -1,21 +1,40 @@
 # The boot loader
 
+### how to get XP
+You need to demo two things:
+
+1. your own bootloader that prints some message to the screen
+2. you own basic operating system that prints some message to the screen white letters on a blue background. This means you create an ISO image of your OS and run it using qemu (all this is explained in this writeup.)
+
+Once you demo, give my a 3x5 card with your name, your avatar name, and 'GRUB' written on the card.
+
+
+### references
+this lab is based on the following material.
+
+* [How to implement your own “Hello, World!” boot loader using Assembly language on bare-metal machine](https://blog.ghaiklor.com/how-to-implement-your-own-hello-world-boot-loader-c0210ef5e74b) by Eugene Obrezkov
+* [Kernels 101 – Let’s write a Kernel](https://arjunsreedharan.org/post/82710718100/kernels-101-lets-write-a-kernel) by Arjun Sreedharan
+* [How to start from scratch: Booting a kernel](https://people.kth.se/~johanmon/ose/assignments/boot.pdf) by Johan Montelius
+* [Linux Inside - Kernel booting process. Part 1.](https://0xax.gitbooks.io/linux-insides/content/Booting/linux-bootstrap-1.html)
 
 ## Part 1 - Pressing the power button on your laptop.
-You would think a power button, by definition, would turn the power on and off, but in fact the power button is programmable. It may just put your computer to sleep. In fact there are exploits that take advantage of this. For example, the Blue Pill Exploit won't survive a hard reboot but it simply takes over the power button and fakes a reboot. 
+You would think a power button, by definition, would turn the power on and off, but in fact the power button is programmable. It may just put your computer to sleep. In fact there are exploits that take advantage of this. For example, the [Blue Pill Exploit](https://en.wikipedia.org/wiki/Blue_Pill_(software)), which takes complete control of your operating system, won't survive a hard reboot but it simply takes over the power button and fakes a reboot. 
 
-That said, I am going to start with the notion that a power button actually turns on the power to your laptop and my question is what happens when you press that power button? Here is what happens.
+That said, I am going to start with the notion that a power button actually turns on the power to your laptop and we are going to explore what happens when you press that power button. 
 
 Well, before we get to that let us first talk about ...
 
 ### The BIOS
-On the motherboard there is a flash memory chip called the BIOS (Basic Input Output System). Sometimes the manufacturer of the laptop or motherboard will release an update to the BIOS and you can "flash the BIOS" with the update -- meaning your replace the contents of that memory chip with the new data. I am sure most of you have seen a BIOS configuration screen. Often you can gain access to it by pressing the delete key on bootup.  On the configuration screen you can specify things like the boot order of the drives, fan speed, and possibly the core speed of the CPU.  
+On the motherboard there is a flash memory chip called the BIOS (Basic Input Output System). Sometimes the manufacturer of the laptop or motherboard will release an update to the BIOS and you can "flash the BIOS" with the update -- meaning you replace the contents of that memory chip with new data. I am sure most of you have seen a BIOS configuration screen. Often you can gain access to it by pressing the delete key on bootup.  On the configuration screen you can specify things like the boot order of the drives, fan speed, and possibly the core speed of the CPU.  
+
+
+![](images/bios.jpg)
 
 So, what happens when we press the power button.
 
 1. The button turns on the power supply of the computer. For a laptop it connects the battery to the motherboard. So now the motherboard and all the components on it are powered.
-2. The computer tests all the hardware components to make sure they are okay. This is called the power on self test or POST, which is a small program within the BIOS. It checks the RAM. It checks for a keyboard and mouse. If it finds something wrong it beeps a particular code.
-3. Code on the BIOS displays information on the attached monitor This includes the BIOS manufacturer, processor specs, amount of RAM detected, and drives connected. Most laptop manufacturers hid this information behind a spash screen. You can turn off the spash screen in the BIOS to get all the details.
+2. The computer tests all the hardware components to make sure they are okay. This is called the power on self test or POST, which is a small program within the BIOS. It checks the RAM. It checks for a keyboard and mouse. If it finds something wrong it beeps a particular code specific to a BIOS manufacturer.
+3. Code on the BIOS displays information on the attached monitor This includes the BIOS manufacturer, processor specs, amount of RAM detected, and drives connected. Most laptop manufacturers hid this information behind a splash screen. ()You can turn off the splash screen in the BIOS to get all the details.)
 4. The BIOS code attempts to load the first sector of the boot disk...
 
 Amazingly enough, that is the high level description of what happens. Let's get a more detailed look.
@@ -32,10 +51,10 @@ Part of this process is that the CPU gets power.
      CS selector  0xf000
      CS base      0xffff0000
      
-Many of you used the Raspberry Pi in your architecture class, which is nice and clean, so you may not enjoy this part too much. The Intel 8086 was developed in 1976. To maintain backward compatibility (not a bad thing in general) even with their last Core X processors with 18 cores. This leads to some wonkiness that we need to deal with.
+Many of you used the Raspberry Pi in your architecture class, which is nice and clean, so you may not enjoy this part too much. The Intel 8086 was developed in 1976. Even in their current CPU chips, for example the Core X processors with 18 cores, Intel has elected to maintain some backward compatibility with the original chip designed in 1976.  This leads to some wonkiness that we need to deal with.
 
 ### 3. Real Mode
-When an Intel processor starts--even the latest and greatest Intel processor--, it is in [real mode]9https://en.wikipedia.org/wiki/Real_mode). The Intel 8086 had a 20-bit address bus. Now let me ask you this. How much memory can that bus address? Pause, do some mental calisthenics, and figure it out .....
+When an Intel processor starts--even the latest and greatest Intel processor--, it is in [real mode](https://en.wikipedia.org/wiki/Real_mode). The Intel 8086 had a 20-bit address bus. Now let me ask you this. How much memory can that bus address? Pause, do some mental calisthenics, and figure it out .....
 
      .
      .
@@ -49,14 +68,14 @@ When an Intel processor starts--even the latest and greatest Intel processor--, 
      
 If you though 2^20 or 1,048,576 or 1 megabyte you would be correct. So when you high priced laptop with 16gb of memory first starts, it can only access 1MB of memory. That is sort of a bummer. But it gets worse. The registers on an 8086 were only 16 bits--so 2^16 or 64k of memory.
 
-> side note: [my first computer](https://en.wikipedia.org/wiki/ZX80) had 2k of memory and my second had 64k
+> side note: [my first computer](https://en.wikipedia.org/wiki/ZX80) had 2k of memory and [my second](https://en.wikipedia.org/wiki/Commodore_64) had 64k
 
-So the 8086 address bus was 20 bits but the registers were 16 so they came up with idea of [memory segmentation](https://en.wikipedia.org/wiki/Memory_segmentation).  In this scheme the physical memory was divided into segments that were 2^16 or 65536 bytes or 64KB. So accessing a particular memory location was a two part process. First we identify which segment we are interested in. This is called the `segment selector` in the `CS selector` register. Second, we identify where in that segment is the memory we are interested in(the `offset` in the `IP` register) .  So if
+So the 8086 address bus was 20 bits but the registers were 16 so they came up with idea of [memory segmentation](https://en.wikipedia.org/wiki/Memory_segmentation).  In this scheme the physical memory was divided into segments and each segment was 2^16 or 65536 bytes or 64KB in size. So accessing a particular memory location was a two part process. First we identify which segment we are interested in. This is called the `segment selector` in the `CS selector` register. Second, we identify where in that segment is the memory we are interested in (the `offset` in the `IP` register) .  So if
 
 	IP = 0x1111
 	CS = 0x2000
 	
-then the actual physical address is 
+then the actual physical address is (and here I am using Python to help me figure this out)
 
 	>>> hex((0x2000 << 4) + 0x1111)
     '0x21111'
@@ -76,9 +95,9 @@ This is exactly how things work when running merrily along but it is not how it 
         CS selector  0xf000
         CS base      0xffff0000
    
-  when your laptop powers up, the `CS Base` is filled with a hard coded number.  The CPU will use this hard coded number until `CS selector` is changed.
+ when your laptop powers up, the `CS Base` is filled with a hard coded number.  The CPU will use this hard coded number until `CS selector` is changed.
   
-In this case we get. So the first instruction the CPU will execute will be at address:
+When your laptop boots the first instruction the CPU will execute will be at address:
 
 	0xfff0000 + 0xfff0 = 	0xfffffff0
 	
@@ -88,8 +107,6 @@ which is 16 bytes below 4GB. This is called the [reset vector](https://en.wikipe
 After initializing and checking hardware the BIOS code needs to find a bootable device. It does this by checking the boot order in the BIOS configuration. The BIOS tries to find a boot sector. The boot sector is 512 bytes long and the final two bytes are the [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming))  `0x55` and `0xaa`, which indicates to the BIOS that this device is bootable. If the BIOS finds that the device is bootable, the contents of the boot sector are loaded into memory and executed.
 
 # Creating our own bootloader
-
-> This section is from Eugene Obrezkov's tutorial, How to implement your own “Hello, World!” boot loader
 
 
 So what does that 512 byte boot sector contain?  That sector contains a small program that will load the operating system. This program is called the **bootloader**. The bootloader is written in assembly. To create one we will need both an assembler `nasm`, and an emulator `qemu`. These are both included in the Vagrantfile for this class. 
@@ -433,7 +450,7 @@ delay of 10 seconds before GRUB loads the default kernel
 	set timeout=10
 	set default=0
 	menuentry "my os" {
-	multiboot2 /boot/kernel
+	multiboot2 /boot/kernel.bin
 	boot
 	}
 	
@@ -446,9 +463,12 @@ contains both GRUB and our kernel.
 ### booting our OS
 Finally we can boot our operating system
 
-	qemu-system-x86_64 -cdrom cdrom.iso
-	
-Hopefully, we should see our hello world message.
+	 
+	qemu-system-x86_64 -curses -cdrom cdrom.isoHopefully, we should see our hello world message.
 
 
 
+![](images/Lab1.2.png)
+
+
+On my system I can escape our OS by pressing `<escape> 2` followed by `q <enter>`
