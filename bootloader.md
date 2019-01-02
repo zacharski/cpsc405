@@ -37,6 +37,8 @@ So, what happens when we press the power button.
 3. Code on the BIOS displays information on the attached monitor This includes the BIOS manufacturer, processor specs, amount of RAM detected, and drives connected. Most laptop manufacturers hid this information behind a splash screen. ()You can turn off the splash screen in the BIOS to get all the details.)
 4. The BIOS code attempts to load the first sector of the boot disk...
 
+![](images/Bios-which-key.jpg)
+
 Amazingly enough, that is the high level description of what happens. Let's get a more detailed look.
 
 ### The details
@@ -109,7 +111,7 @@ After initializing and checking hardware the BIOS code needs to find a bootable 
 # Creating our own bootloader
 
 
-So what does that 512 byte boot sector contain?  That sector contains a small program that will load the operating system. This program is called the **bootloader**. The bootloader is written in assembly. To create one we will need both an assembler `nasm`, and an emulator `qemu`. These are both included in the Vagrantfile for this class. 
+So what does that 512 byte boot sector contain?  That sector contains a small program that will load the operating system. This program is called the **bootloader**. The bootloader is written in assembly. To create one we will need both an assembler `nasm`, and an emulator `qemu`. These are both included in the [Vagrantfile](https://github.com/zacharski/cpsc405/blob/master/Vagrantfile) for this class. 
 
 ### Question
 How does the program in BIOS know that a disk has an executable bootloader?
@@ -130,7 +132,7 @@ The `$` represents the address of the current instruction. So
 
 	jmp $
 	
-is jumping to its address for the next instruction which creates an infinite loop.
+is jumping to its current address for the next instruction which creates an infinite loop.
 
 Now the next instruction
 
@@ -165,6 +167,10 @@ You should see something like
 
 ![](images/boot1.png)
 
+### QEMU
+
+**QEMU** is short for **q**uick **emu**lator. It emulates various hardware---from the ARM chip on a Raspberry Pi to Intel chips. This is different from a hypervisor like VirtualBox, which only runs virtual machines built for the same architecture as the host machine.
+
 ## Printing the name of our OS
 Since we have a primitive working `boot.asm` let's modify it to print a welcome message. Here is the code.
 
@@ -194,9 +200,21 @@ As you may know the `int` in
 	
 does not stand for integer but rather interrupt. Interrupt `0x10` writes the character in register `al` to the video display.
 
-When we compile it and run it in qemu we get:
+When we assemble it 
+
+	nasm -f bin -o boot.bin boot.asm
+
+(the `-f bin` instructs the assembler to produce a binary --executable -- file)
+
+and run it in qemu 
+
+	qemu-system-x86_64 -curses -drive file=boot.bin,index=0,media=disk,format=raw
+
+we get:
 
 ![](images/boot2.png)
+
+To exit qemu type `<escape> 2` followed by `q <return>`
 
 ## You try
 Can you modify the program so that it prints two lines? For example,
@@ -209,9 +227,9 @@ hint 2.  The code `msg:	db "Wecome to zOS!",0x09, 0x09, 0 ` would end our messag
 
 
 # The Grand Unified Bootloader
-We've created a primitive bootloader from scratch. Well ... it is not exactly a bootloader. A bootloader commonly loads the operating system. It sets up an environment (I am sort of vague here), it loads the Operating System kernel executable from disk to memory, and starts execution of the OS.  For Unix distributions, a common bootloader is called GRUB, short for **GR**and **U**nified **B**ootloader. In this exercise we are going to create a trivial OS kernel, and have GRUB boot that kernel. Pretty exciting. So, let's get started.
+We've created a primitive bootloader from scratch. Well ... it is not exactly a bootloader. A bootloader commonly loads the operating system. It sets up an environment (I am sort of vague here), it loads the Operating System kernel executable from disk to memory, and starts execution of it.  For Unix distributions, a common bootloader is called GRUB, short for **GR**and **U**nified **B**ootloader. In this exercise we are going to create a trivial OS kernel, and have GRUB boot that kernel. Pretty exciting. So, let's get started.
 
-Recall that the BIOS looks for a disk where the first 512 byte sector is a boot sector (identified by the magic numbers). When it finds a boot sector it loads it into memory and executes it. So the program it executes is limited to 512 bytes. This was not a problem for our simple boot examples above, but the GRUB executable is larger than that. So the boot sector [boot.img](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/boot.S;hb=HEAD) loads an initial executable of the core image [diskboot.img](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/diskboot.S;hb=HEAD) which then loads the rest of the core image, which contains GRUB's kernel and file system drivers  into memory. After loading the rest of the core image, it executes the [grub_main](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/kern/main.c )function.
+Recall that the BIOS looks for a disk where the first 512 byte sector is a boot sector (identified by the magic numbers). When it finds a boot sector it loads it into memory and executes it. So the program it executes is limited to 512 bytes. This was not a problem for our simple boot examples above, but the GRUB executable is larger than that. So the boot sector [boot.img](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/boot.S;hb=HEAD) loads an initial executable of the core image [diskboot.img](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/diskboot.S;hb=HEAD) which then loads the rest of the core image, which contains GRUB's kernel and file system drivers  into memory. After loading the rest of the core image, it executes the [grub_main](http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/kern/main.c ) function.
 
 So here is a question about writing an operating system. Which language would you prefer to write an OS?
 
@@ -225,7 +243,7 @@ Personally, I would prefer Javascript, but, sadly, that is not a viable option. 
 
 **How do you think GRUB knows that the sector that contains our initial OS code contains real OS kernel code?**
 
-If you think 'magic numbers' you would be correct. Specifically, BIOS looks for a multiboot header. If it finds a multiboot header the BIOS first switched to [protected mode](https://en.wikipedia.org/wiki/Protected_mode), loads the OS kernel and starts execution.  
+If you think 'magic numbers' you would be correct. Specifically, BIOS looks for a multiboot header. If it finds a multiboot header, the BIOS first switches to [protected mode](https://en.wikipedia.org/wiki/Protected_mode), loads the OS kernel and starts execution.  
 
 ## The multiboot header
 
@@ -237,7 +255,7 @@ The multiboot header contains the following
 * a [checksum](https://en.wikipedia.org/wiki/Checksum)
 * a sequence of tags (for this example, we don't have any)
 
-> The following code is based on a tutorial by Johan Montelius  
+ 
 
 Here is the assembly for the multiboot header:
 
@@ -337,7 +355,7 @@ Fortunately, because of the bizarre world of backward compatibility in computer 
 
 **Note: I do not use the above codeblock in my example kernel.**
   
- Sweet. But wait, it is even cooler. Each of the 80x24 little virtual boxes has a foreground color (the color of the character) and a background color (the color of the little box).  	
+ Sweet. But wait, it is even cooler. Each of the 80x24 little virtual boxes has a foreground color (the color of the character) and a background color (the color of the little box).   Each little virtual box is represented by two bytes. The first byte represents the ASCII character to display. So, for example, `0x41` will display *A*. The second byte is divided into two 4 bit sections, the first represents the background color and the second represents the foreground color. So `0x07` represents a light grey letter on a black background.	
 
 Now you might think that the `kmain` function:
 
@@ -353,7 +371,7 @@ that prints a message to the screen is easy because we can just have
 	    printf("Hello, kernel World!\n")
 	}
 	
-There are two standards for C implementations. The **freestanding** implementation only provides the macros and types declared in the standard headers \<float.h\>, \<iso646.h\>, \<limits.h\>, \<stdarg.h\>, \<stdbool.h\>, \<stddef.h\>, and \<stdint.h\>. The **hosted** implementation provides access to all of the C Standard Library. We are using the freestanding version.  So that means `printf` is unavailable to us. Our code above uses \<stdbool.h\> to get the `bool` datatype, \<stddef.h\> to get `size_t ` and `NULL`, and \<stdint.h\> to get the `intx_t` and `uintx_t` datatypes which are invaluable for operating systems development, where you need to make sure that the variable is of an exact size (if we used a short instead of `uint16_t` and the size of short changed, our VGA driver here would break!). 
+There are two standards for C implementations. The **freestanding** implementation only provides the macros and types declared in the standard headers \<float.h\>, \<iso646.h\>, \<limits.h\>, \<stdarg.h\>, \<stdbool.h\>, \<stddef.h\>, and \<stdint.h\>. The **hosted** implementation provides access to all of the C Standard Library. In your previous C coding experience you were probably using a hosted implementation. Now we are using the freestanding version.  So that means `printf` is unavailable to us. Our code above uses \<stdbool.h\> to get the `bool` datatype, \<stddef.h\> to get `size_t ` and `NULL`, and \<stdint.h\> to get the `intx_t` and `uintx_t` datatypes which are invaluable for operating systems development, where you need to make sure that the variable is of an exact size (if we used a short instead of `uint16_t` and the size of short changed, our VGA driver here would break!). 
 
 Here is the C code for our kernel.
 
@@ -391,10 +409,10 @@ Here is the C code for our kernel.
 		return;
 	}
 
-If we name this file kernel_c.c we can compile it with
+If we name this file kernel.c we can compile it with
 
 
-	gcc -m32 -c kernel_c.c -ffreestanding 
+	gcc -m32 -c kernel.c -ffreestanding 
 	
 Now we have assembled code for our two assembly files and compiled code for  `kernel_c.c` Now we need to link the object files together. We will use the linker script:
 
@@ -421,7 +439,7 @@ Now we have assembled code for our two assembly files and compiled code for  `ke
 	
 And link the object files:
 
-	ld -m elf_i386 -o kernel.bin -T link.ld multiboot_header.o kernel_a.o kernel_c.o
+	ld -m elf_i386 -o kernel.bin -T link.ld multiboot_header.o kernel_a.o kernel.o
 
 The result is still in elf format which we can inspect with:
 
@@ -472,3 +490,5 @@ Finally we can boot our operating system
 
 
 On my system I can escape our OS by pressing `<escape> 2` followed by `q <enter>`
+
+Note: the provided code display light grey letters on a black background. Your task is to change it to display white letters on a blue background.
