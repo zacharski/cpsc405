@@ -1,7 +1,7 @@
 # Pipes and Shared Memory
 As we have learned, each process has its own space in memory. If we call `fork` the child process gets an identical but separate copy of the contents of this memory including the text, data, and bss segments, heap and stack. So even a child process does not share memory with its parent process. Consider the following example:
 
-#include <stdio.h>
+   #include <stdio.h>
 	#include <stdlib.h>
 	#include <unistd.h>
 	#include <string.h>
