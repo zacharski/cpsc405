@@ -8,7 +8,7 @@ In this writeup we are going to investigate the layout of a process; where
 are the different areas located and which data structures goes where.
 
 # 1. examining the memory map of a process
-So we will will first take a look at the code segment and we will do so using
+So we will will first take a look at the code segment and we will do so using
 a GCC extension to the C language. Using this extension you can store a
 label in a variable and then use it as any other value.
 
@@ -16,7 +16,7 @@ label in a variable and then use it as any other value.
 
 Start by writing and compiling this small C program, `code.c`. As you see
 we use two constructs that you might not have seen before, the label `foo:`
-and the conversion of the label to a value in `&&foo`. If everything works 
+and the conversion of the label to a value in `&&foo`. If everything works 
 you should see the address of the foo label printed in the terminal. The
 program will then hang waiting for a keyboard input (actually anything on
 the standard input stream)
@@ -49,7 +49,7 @@ input.
 
 The number `13284` (or whatever you see) is the process identifier 
 Now we take a look in the directory `/proc `where we find a directory
-with the name of the process identifier. In this directory there many files and directories but the  one we are currently interested in is the `maps` file. 
+with the name of the process identifier. In this directory there many files and directories but the  one we are currently interested in is the `maps` file. 
 Let us take a look at it using the `cat` command 
 
 	cat /proc/13284/maps
@@ -143,7 +143,7 @@ it. Is it where you thought it would be?
 # 2. The stack
 
 The stack in C/Linux is locate almost in the top of the user space and grows
-downwards. You will find it in the process map and the entry will probably
+downwards. You will find it in the process map and the entry will probably
 look something like this:
 
 	7ffd501c4000-7ffd501e5000 rw-p 00000000 00:00 0                          [stack]
@@ -155,7 +155,7 @@ layout of the process and how it is related to the x86 architecture.
 ## 2.1 The address space of a process
 
 We are using a 64-bit x86 machine so addresses are 8 bytes wide. Take a look at the address `0x7ffed89f5000`, how many bits are used? What is the 48'th bit?
-In a x86-64 architecture an address field is 64-bits but only 48 are used.
+In a x86-64 architecture an address field is 64-bits but only 48 are used.
 The uppermost bits (63 to 47) should all be the same; in general, if they are
 0 it's the user space and if they are 1 it's kernel space. The user space thus
 ends in
@@ -265,7 +265,7 @@ local variable `r` but it's more fun living on the edge.
 
 
 If this works you should have a nice stack trace. The interesting thing is
-now to figure out why the stack looks like it does. If you know the general
+now to figure out why the stack looks like it does. If you know the general
 structure of a stack frame you should be able to identify the return address
 after the call to `foo()` and `zot()`. You should also be able to identify the
 saved base stack point i.e. the value of the stack pointer before the local
@@ -274,7 +274,7 @@ procedure starts to add things to the stack.
 You also see the local data structures: `p`, `q`, `r` and a copy of the address
 to `p`. If this was a vanilla stack as explained in any school books, you would
 also be able to see the argument to the procedures. However, GCC on a x86
-architecture will place the first six arguments in registers so those will not
+architecture will place the first six arguments in registers so those will not
 be on the stack. You can add ten dummy arguments to the procedures and
 you will see them on the stack.
 
@@ -286,7 +286,7 @@ will thus always end with a 0.
 Try locating the value of the variable `i` in the `zot() ` procedure. It is of
 course a moving target but what is the value of i when the location of i is
 printed?
-Can you find the value of the process identifier? Convert the decimal
+Can you find the value of the process identifier? Convert the decimal
 format to hex and it should be there somewhere.
 
 # 3. The heap
@@ -305,7 +305,7 @@ on the heap, instead a library call is used. This is of coarse the `malloc()`
 procedure (and its siblings). When `malloc` is called it will allocate an area
 on the heap - let's see if we can spot it.
 
-Create a new file heap.c and cut and paste the structure of our main
+Create a new file heap.c and cut and paste the structure of our main
 procedure. Keep the tricky part the prints the memory map but now include
 the following section:
 
@@ -403,7 +403,7 @@ above
 	
 # 4. A shared library
 
-When we first printed the memory map there was of course a lot of things
+When we first printed the memory map there was of course a lot of things
 that you had no clue of what they were. One after one we have identified the
 segments for the code, data, strange kernel stuff, stack and the heap. There
 has also been a lot of junk in the middle, between the heap and the stack.
@@ -414,7 +414,7 @@ by something similar to:
 
 All of the segments are allocated for shared libraries, either the code or
 areas used for dynamic data structures. We have been using library procedures
-for printing messages, finding the process identifier and for allocating
+for printing messages, finding the process identifier and for allocating
 memory etc. All of those routines are located somewhere in these segments.
 The malloc procedures keep information about the data structures that we
 have allocated and freed and if we mess this up by freeing things twice of
