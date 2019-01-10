@@ -6,7 +6,7 @@ The purpose of this assignment is to become more familiar with the concepts of p
 In order to prepare for this lab (and to make it seem not so overwhelming) you should:
 
 * read the chapters of our textbook dealing with processes.
-* work through [How to Signal a Process](https://people.kth.se/~johanmon/ose/assignments/signals.pdf)
+* work through [Signal Lab](https://github.com/zacharski/cpsc405/blob/master/signalLab.md)
 * reading [sections 3 and 4 of chapter 8 of Bryant and O'Hallron](http://zacharski.org/files/courses/cs405/computerSystemsCh8.pdf) before you write any code will be extremely helpful.
 					
 ## Logistics
