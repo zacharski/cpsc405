@@ -17,16 +17,14 @@ Note: This project will be graded on the default vagrant box running Ubuntu 18.0
 
 ## Hand Out Instructions
 
-We provide a file shlab-handout.tar that contains a template for your program along with a number of useful helper functions. Get it from the class web page. E.g.,
+We provide a github repository that contains a template for your program along with a number of useful helper functions. 
 					
-	vagrant:~$ wget http://zacharski.org/files/courses/cs405/shlab.tar
+	https://github.com/zacharski/simpleShell.git
 					
-Put the file shlab.tar to the protected directory in which you plan to do your work. Then do the following:
-					
-• Type the command tar xvf shlab.tar to expand the tarfile. 1
+
 • Type the command make to compile and link some test routines.
-• Type your team member names, (ignore eids) at the top of the file README.
-					
+• Type your team member names, (ignore eids) at the top of the file SUBMIT.
+					 
 Looking at the `tsh.c` (tiny shell) file, you will see that it contains a functional skeleton of a simple Unix shell. To help you get started, we have already implemented the less interesting functions. Your assignment is to complete the remaining empty functions listed below. 
 
 **You need to write less than 300 lines of code!** 
