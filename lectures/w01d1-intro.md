@@ -1,11 +1,73 @@
 # W01L1 Introduction to Operating Systems
 
+## welcome
+self-driving car
+
+## teams
+
+* section 1  25 - 4 women - 5 teams
+* section 2 17  - 3 teams
+
+Questions
+
+* C experience beyond 305
+* pretty comfortable w/ thread programming
+* expert at using Unix command line 
+* other
+
+team deliverable
+
+avatar 
+
+## CS305 team questions
+* Why study computer architecture?
+* How does it help you as a software developer (if at all)?
+
+team report and discuss
+
+OS might be the same
+
+* Know how stuff works (takes the mystery out of things)
+* some stuff that is conceptually interesting and beautiful
+* counterpoint story
+
+
+## C programs
+
+## cpu.c: 
+just something you can run one instance of first, and
+       then a bunch of at once, in order to show that the CPU
+       can be VIRTUALIZED. Amazingly, the OS can make it seem
+       like you have as many CPUs as you need!
+       e.g., prompt> cpu A
+
+## threads.v0.c:
+shows that a concurrent program, when run without locks,
+       does weird stuff. explain how the program should work,
+       and then ask the students what should happen.
+
+## mem.c: same thing 
+
+## io.c
+
+	strace -c umem (interruptions)
+	w/o -c
+	show mac trace
+	
+
+       
+##  trying writing on paper
+
+
+
 ## Preview
 
 * what is an operating system
 * what are the key components of an operating system?
 * Design and implementation considerations of OS.
-* History
+* Architecture
+* Course Logistics
+
 
 # What is an operating system?
 
@@ -41,13 +103,30 @@ Of course, should also ask why the interfaces look the way they do, and whether 
 
 
 # 2.  3 functions of an OS: 
-1. **referee**: manage resources among applications
-2. **illusionist** - abstraction of hardware (don’t need details of graphics card to write hello world
+1. **referee**: manage resources among applications - is this the abstract or arbitrate role?
+2. **illusionist** - abstraction of hardware (don’t need details of graphics card to write hello world, is the arbitrate or abstract role 
 3. **glue** - share among applications -> file system. cut and paste
 
 # MORE DETAIL 
 ## referee
-running on my laptop - browser, terminal window. etc. all those are running - and keep all of them separate. efficiently . etc.  this referee role has some sub components.
+
+### Phone
+
+* map
+* music
+* phone call
+
+in relation to speaker
+
+### laptop in relation to display
+
+* browser
+* browser playing Netflix
+* terminal window
+* editor
+* 
+
+running on my laptop - browser, terminal window. etc. all those are running - and keep all of them separate. efficiently . etc.  **this referee role has some sub components.**
 
 ### resource allocation. 
 allocate memory, network, processors, to the running applications. we don’t want compiling a long program to interfere with us watching a video on VLC. or streaming netflix. 
@@ -70,17 +149,22 @@ sometimes we want to share. if we have a large task we might want to distribute 
 what do you think that means?
 
 **one method** -> virtualization.
-meaning OS gives the illusion that an application has a complete dedicated machine. 
+meaning OS gives the illusion that an application has a complete dedicated machine.
+
+We saw this in the programs we ran at the beginning of class (dedicated machine). Those also illustrated the referee role 
 ATOMIC OPERATIONS -> Multiple cores - changing same memory location
 
-**push this idea furthe**r -> virtualize the entire computer. so we can run another operating system as an application on top of the existing OS.
+**push this idea further**-> virtualize the entire computer. so we can run another operating system as an application on top of the existing OS.
 
 ![](http://zacharski.org/files/courses/cs405/images/w01d1-fig3.png)
 
 why might we want to do this?
 
-distribute identical OS across computers. 
-security. some security experts -> use one browser for banking and nothing else.
+distribute identical OS across computers.  
+
+* UTexas lab space
+* Docker images to increase throughput
+* security. some security experts -> use one browser for banking and nothing else.
 
 
 other illusion roles -> atomic memory -> disk writes
@@ -106,6 +190,9 @@ Before OS’s: toggle in program in binary; read out answers from LED’s!
 
 **Simple OS**: What if only one application at a time?
 Examples: very early computers, early PC’s, embedded controllers (elevators, cars, Nintendos, …) iPhone
+
+
+**PICTURE OF MSDOS**
 
 Worry less about coordination, more about standard services
 
@@ -148,6 +235,8 @@ these general ideas we learn in OS we can apply in other areas.
 * OSX  86 million
 
 IBM os/2 warp os team: 2000 developers
+
+**kernel vs entire os**
 
 ## Hardware components
 
@@ -196,19 +285,40 @@ Draw picture.  - desktop,   embedded,   phone, mainframes,
 
 ## desktop/laptop
 
+OS | general | Stack Overflow | Steam |
+:---: | :---: | :---: | :---: | 
+MS Windows | 76% | 50% | 95%
+Unix | | | 
+Mac OSX (BSD) | 13% | 27% | 3%
+LInux | 1.5 | 23% | 1%
+ChromeOS | 1.5 | - | -
+ 
 * Microsoft Windows (Microsoft founded in New Mexico)
 * Unix based
 	*  	Mac OSX  (BSD)
 	*  Linux
+## Internet Servers
+* Windows 32%
+* Unix 68%
+*
 
+## Super computers 100% Linux (2017)
 ## Smart phones
-* Androids (Linux)
-*  iOS
+* Androids (Linux) 83% of market
+*  iOS. 12%
+*  Microsoft 3%
+*  RIM < 1%
 
 # Embedded 
 * symbian
+* FitbitOS
+* Routers (WRT)
+* VxWorks
 
 This class -> focus on Linux
+
+** How do you think these different uses change the requirements of an os?**
+
 
 # OS Elements
 talk first about abstractions and mechanisms
@@ -267,6 +377,8 @@ The OS needs special privileges compared w/ user programs. So we distinguish bet
 
 ![](http://zacharski.org/files/courses/cs405/images/w01d1-fig7.png)
  
+traps = exception or faults
+
 also support signals
 
 
@@ -371,9 +483,11 @@ see wikipedia article
 the Mach MicroKernel
 
 
-# Summary
+## XNU X is not unix - 
+* originally for NeXT
+* hybrid kernel  both monolithic and microkernel
 
-# QUIZ
+# QUIZ. - Windows 10 kernel
 
 
 # Course logistics
