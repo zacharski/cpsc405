@@ -47,10 +47,9 @@ I test the code on Ubuntu 18.04 using gcc version 7.3.0.
 ###  Points awarded
 Points will be deducted if your code is not clean and well organized. 
 
-* 7 points  – your code runs in 0.001 CPU time or less (or is the fastest in the class) (by 'run' I mean it produces correct results on all test cases.)
-*  5 points – your code runs in 0.004 CPU time or less
-*  5 points – your code runs
-* 4 points – your code produces correct results for some but not all test cases and it does not produce a seg fault.
-* 2 points – your code produces a seg fault or other runtime error but looks close to a reasonable solution.
+* 70 points  – runs at least as fast as the reference solution or is the fastest in the class(by 'run' I mean it produces correct results on all test cases.)
+* 50 points – your code within 1.5 times as fast as reference solution
+* 40 points – your code produces correct results on all test cases 
+* 20 points – your code produces correct results in at least 2 test cases.
 * 0 points – all other conditions.
 
