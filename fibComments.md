@@ -123,6 +123,19 @@ You used tail recursion so you you really didn't need pipes.
 ## Shared Memory  50
 Same comment
 
+
+# Lex
+## TOTAL 40
+What you have started looks good. for the pipe one after
+
+     //parent
+     waitpid(pid1,&status1,1);
+     waitpid(pid2,&status2,1);
+
+you would do the 2 pipe reads
+
+at the end of `doFib` you would have the write.
+
 # Maske
 
 ## TOTAL 95
