@@ -1,5 +1,7 @@
 # Parallel Log Likelihood 
 
+In the syllabus this was listed as a parallel zip program with a difficulty rating of 3. Today, in an effort to minimize the likelihood of finding complete solutions on the web, I started looking at other compression algorithms. My goal was to find one that was a bit more obscure, the algorithm was straight forward to understand, and there would be some obvious way to parallelize it. That proved quite difficult, so I switched to this task, which has the same objectives (plus I am hoping you will find it fun)
+
 ## Objectives
 
 There are three specific objectives to this assignment:
