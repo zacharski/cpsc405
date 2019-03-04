@@ -103,9 +103,9 @@ least) the following issues:
     resources available.
 
 - **How to efficiently perform each piece of work.** While parallelization
-    will yield speed up, each thread's efficiency in performing the
-    compression is also of critical importance. Thus, making the core
-    compression loop as CPU efficient as possible is needed for high
+    will yield speed up, each thread's efficiency in performing its work
+     is also of critical importance. Thus, making the core
+     loop as CPU efficient as possible is needed for high
     performance. 
 
 - **How to access the input file efficiently.** On Linux, there are many ways
