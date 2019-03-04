@@ -43,7 +43,7 @@ really | 83.01
 We interpret this as meaning that it is somewhat surprising how many times Trump used the word *going* given how often that word occurs in Obama's speeches. It is also surprising that Trump uses *I* and *very* as often as he does. On the other hand, it is surprising that Obama uses *who* and *the* as often as he does given how often those words appear in Trump's speeches. 
 
 ### 8 years ago in PHP
-8 years ago, I implemented this in PHP. The sites is [Online Text Comparator](http://guidetodatamining.com/ngramAnalyzer/comparator.php). The source code is in [this github repo](https://github.com/zacharski/ngramAnalyzer).  On the bottom of the webpage you can try some texts I uploaded and compare the Lotus Sutra to Walden, for example.
+8 years ago, I implemented this in PHP. (back then, it was still in the days when PHP was cool)The sites is [Online Text Comparator](http://guidetodatamining.com/ngramAnalyzer/comparator.php). The source code is in [this github repo](https://github.com/zacharski/ngramAnalyzer).  On the bottom of the webpage you can try some texts I uploaded and compare the Lotus Sutra to Walden, for example.
 
 # Your task: a parallel implementation.
 You are to implement the formula Dr. Dunning gives to compare 2 texts. For example:
