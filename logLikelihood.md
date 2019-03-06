@@ -129,13 +129,21 @@ least) the following issues:
 Your code should compile (and should be compiled) with the following flags:
 `-Wall -Werror -pthread -O`. The last one is important: it turns on the
 optimizer! In fact, for fun, try timing your code with and without `-O` and
-marvel at the difference.
+marvel at the difference. (Note: This code will be tested in an Ubuntu 18.04 LTS box)
 
 Your code will first be measured for correctness, ensuring that it analyzes input
 files correctly.
 
 If you pass the correctness tests, your code will be tested for performance;
 higher performance will lead to better scores.
+
+# Hand In Instructions
+* Make sure you have included your name in a  README file. Also in that file outline your general approach.
+Create a tar file handin.tar that contains all of your source files, and the README.
+Attach the tar file to an email sent to the gmail address submit.o.bot with subject line: cpsc405 log likelihood.
+
+**Good luck!**
+
 
 
 
