@@ -48,7 +48,7 @@ Ted Dunning wrote an often cited and simply wonderful paper [Accurate Methods fo
 
 We interpret this as meaning that it is somewhat surprising how many times Trump used the word _going_ given how often that word occurs in Obama's speeches. It is also surprising that Trump uses _I_ and _very_ as often as he does. On the other hand, it is surprising that Obama uses _who_ and _the_ as often as he does given how often those words appear in Trump's speeches.
 
-**You can solely use the formula in this paper to implement your code** You don't need to look at the following PHP code.
+**You can solely use the formula in this paper to implement your code** Or you can look at another view of the formula in section 2.6 of [Comparing Corpora](https://www.sketchengine.eu/wp-content/uploads/comparing_corpora_2001.pdf) by Adam Kilgarriff. You don't need to look at the following PHP code. The PHP code is only for those who hate looking at math formulas.
 
 ### 8 years ago in PHP
 
