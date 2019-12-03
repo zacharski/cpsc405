@@ -104,3 +104,11 @@ Some useful commands
      
     hadoop fs -text bookout/part-00000
 
+#### 5. Zipcode data
+
+[Zipcode dataset](http://federalgovernmentzipcodes.us/free-zipcode-database-Primary.csv)
+
+Task 1: Can you find the population of each city?
+
+Task 2: Can you find the city with the largest population for each state?
+
